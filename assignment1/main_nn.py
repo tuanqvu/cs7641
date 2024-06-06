@@ -16,6 +16,25 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau, ExponentialLR
 import matplotlib.pyplot as plt
 import random
 
+def plot_learning_curves(train_losses, eval_losses, plot_name = 'loss_curves.png'):
+    """
+    Plot the training loss and accuracy curves
+    """
+    plt.subplot(1, 2, 1)
+    for lr, losses in train_losses.items():
+        plt.plot(range(len(losses)), losses, label=str(lr))
+    plt.xlabel('Epoch')
+    plt.legend()
+    plt.title('Training')
+    plt.subplot(1, 2, 2)
+    for lr, losses in eval_losses.items():
+        plt.plot(range(len(losses)), losses, label=str(lr))
+    plt.xlabel('Epoch')
+    plt.legend()
+    plt.title('Testing')
+    plt.savefig(plot_name)
+
+
 def plot_training_curves(train_losses, train_accuracies, eval_losses, eval_accuracies, plot_name = 'loss_curves.png'):
     """
     Plot the training loss and accuracy curves
@@ -90,17 +109,9 @@ def eval_model(model : nn.Module, dataloader : DataLoader, criterion : nn.Module
     return (temp_losses, temp_accs)
 
 
-def train_mlp_drybean(data_splits = [0.8, 0.1, 0.1]):
+def train_mlp_drybean(lr=2e-3, regularization=1e-4, hidden_dim=50, n_epochs=50, batch_size=16):
     """
     """
-    lr = 2e-3
-    regularization = 1e-4
-    hidden_dim = 50
-
-    n_epochs = 50
-    batch_size = 16
-    
-    # dataset = DryBeanDataset(transforms=nn.functional.normalize)
     dataset = DryBeanDataset()
     model = TwoLayerMLP(dataset.get_num_features(), dataset.get_num_classes(), hidden_dim)
 
@@ -222,15 +233,23 @@ def main():
     if not os.path.exists('checkpoints'):
         os.makedirs('checkpoints')
 
-    best_model, train_losses, train_accuracies, eval_losses, eval_accuracies = train_mlp_drybean()
-    torch.save(best_model, os.path.join('checkpoints', 'drybean_nn_best_model.pt'))
-    plot_training_curves(train_losses, train_accuracies, eval_losses, eval_accuracies,
-                         plot_name=os.path.join('checkpoints', 'drybean_nn_loss_curves.png'))
+    training_loss = {}
+    eval_loss = {}
 
-    best_model, train_losses, train_accuracies, eval_losses, eval_accuracies = train_mlp_adult()
-    torch.save(best_model, os.path.join('checkpoints', 'adult_nn_best_model.pt'))
-    plot_training_curves(train_losses[1:], train_accuracies[1:], eval_losses[1:], eval_accuracies[1:],
-                         plot_name=os.path.join('checkpoints', 'adult_nn_loss_curves.png'))
+    learning_rates = [2e-3, 1e-3, 5e-3, 1e-2]
+    for lr in learning_rates:
+        set_seed()
+        _,train_losses,_,eval_losses,_= train_mlp_drybean(lr=lr)
+        training_loss[lr] = train_losses
+        eval_loss[lr] = eval_losses
+
+    plot_learning_curves(training_loss, eval_loss, plot_name=os.path.join('checkpoints', 'drybean_nn_loss_curves.png'))
+    # torch.save(best_model, os.path.join('checkpoints', 'drybean_nn_best_model.pt'))
+
+    # best_model, train_losses, train_accuracies, eval_losses, eval_accuracies = train_mlp_adult()
+    # torch.save(best_model, os.path.join('checkpoints', 'adult_nn_best_model.pt'))
+    # plot_training_curves(train_losses[1:], train_accuracies[1:], eval_losses[1:], eval_accuracies[1:],
+    #                      plot_name=os.path.join('checkpoints', 'adult_nn_loss_curves.png'))
 
 if __name__ == '__main__':
     main()
