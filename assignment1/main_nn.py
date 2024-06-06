@@ -24,12 +24,14 @@ def plot_learning_curves(train_losses, eval_losses, plot_name = 'loss_curves.png
     for lr, losses in train_losses.items():
         plt.plot(range(len(losses)), losses, label=str(lr))
     plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
     plt.legend()
     plt.title('Training')
     plt.subplot(1, 2, 2)
     for lr, losses in eval_losses.items():
         plt.plot(range(len(losses)), losses, label=str(lr))
     plt.xlabel('Epoch')
+    plt.ylabel('Accuracy')
     plt.legend()
     plt.title('Testing')
     plt.savefig(plot_name)
@@ -233,17 +235,17 @@ def main():
     if not os.path.exists('checkpoints'):
         os.makedirs('checkpoints')
 
-    training_loss = {}
-    eval_loss = {}
+    training_accuracy = {}
+    eval_accuracy = {}
 
     learning_rates = [2e-3, 1e-3, 5e-3, 1e-2]
     for lr in learning_rates:
         set_seed()
-        _,train_losses,_,eval_losses,_= train_mlp_drybean(lr=lr)
-        training_loss[lr] = train_losses
-        eval_loss[lr] = eval_losses
+        _,_,train_accuracies,_,eval_accuracies= train_mlp_drybean(lr=lr)
+        training_accuracy[lr] = train_accuracies
+        eval_accuracy[lr] = eval_accuracies
 
-    plot_learning_curves(training_loss, eval_loss, plot_name=os.path.join('checkpoints', 'drybean_nn_loss_curves.png'))
+    plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'drybean_nn_loss_curves.png'))
     # torch.save(best_model, os.path.join('checkpoints', 'drybean_nn_best_model.pt'))
 
     # best_model, train_losses, train_accuracies, eval_losses, eval_accuracies = train_mlp_adult()
