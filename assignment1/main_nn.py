@@ -162,16 +162,9 @@ def train_mlp_drybean(lr=2e-3, regularization=1e-4, hidden_dim=50, n_epochs=50, 
     return best_model, train_losses, train_accuracies, eval_losses, eval_accuracies
 
 
-def train_mlp_adult():
+def train_mlp_adult(lr=1e-3, regularization=1e-4, hidden_dim=25, n_epochs=50, batch_size=16):
     """
     """
-    lr = 1e-3
-    regularization = 1e-4
-    hidden_dim = 25
-
-    n_epochs = 50
-    batch_size = 16
-
     dataset = AdultDataset()
     model = TwoLayerMLP(dataset.get_num_features(), dataset.get_num_classes(), hidden_dim)
 
@@ -237,21 +230,44 @@ def main():
 
     training_accuracy = {}
     eval_accuracy = {}
-
     learning_rates = [2e-3, 1e-3, 5e-3, 1e-2]
     for lr in learning_rates:
         set_seed()
         _,_,train_accuracies,_,eval_accuracies= train_mlp_drybean(lr=lr)
         training_accuracy[lr] = train_accuracies
         eval_accuracy[lr] = eval_accuracies
+    plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'drybean_nn_lr_loss_curves.png'))
 
-    plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'drybean_nn_loss_curves.png'))
-    # torch.save(best_model, os.path.join('checkpoints', 'drybean_nn_best_model.pt'))
+    training_accuracy = {}
+    eval_accuracy = {}
+    batch_sizes = [8, 16, 32, 64]
+    for bs in batch_sizes:
+        set_seed()
+        _,_,train_accuracies,_,eval_accuracies= train_mlp_drybean(batch_size=bs)
+        training_accuracy[lr] = train_accuracies
+        eval_accuracy[lr] = eval_accuracies
+    plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'drybean_nn_bs_loss_curves.png'))
 
-    # best_model, train_losses, train_accuracies, eval_losses, eval_accuracies = train_mlp_adult()
-    # torch.save(best_model, os.path.join('checkpoints', 'adult_nn_best_model.pt'))
-    # plot_training_curves(train_losses[1:], train_accuracies[1:], eval_losses[1:], eval_accuracies[1:],
-    #                      plot_name=os.path.join('checkpoints', 'adult_nn_loss_curves.png'))
+    training_accuracy = {}
+    eval_accuracy = {}
+    learning_rates = [2e-3, 1e-3, 5e-3, 1e-2]
+    for lr in learning_rates:
+        set_seed()
+        _,_,train_accuracies,_,eval_accuracies= train_mlp_adult(lr=lr)
+        training_accuracy[lr] = train_accuracies
+        eval_accuracy[lr] = eval_accuracies
+    plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'adult_nn_lr_loss_curves.png'))
+
+    training_accuracy = {}
+    eval_accuracy = {}
+    batch_sizes = [8, 16, 32, 64]
+    for bs in batch_sizes:
+        set_seed()
+        _,_,train_accuracies,_,eval_accuracies= train_mlp_adult(batch_size=bs)
+        training_accuracy[lr] = train_accuracies
+        eval_accuracy[lr] = eval_accuracies
+    plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'adult_nn_bs_loss_curves.png'))
+
 
 if __name__ == '__main__':
     main()
