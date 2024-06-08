@@ -22,3 +22,19 @@ class TwoLayerMLP(nn.Module):
         """
         """
         return self.stack.forward(inputs)
+
+class LinearModel(nn.Module):
+    """
+    """
+    def __init__(self, input_dim, output_dim) -> None:
+        super().__init__()
+        self.stack = nn.Sequential(
+            nn.Linear(in_features=input_dim, out_features=output_dim)
+        )
+        self.stack.apply(init_weight)
+
+
+    def forward(self, inputs):
+        """
+        """
+        return self.stack.forward(inputs)

@@ -35,6 +35,7 @@ def plot_learning_curves(train_losses, eval_losses, plot_name = 'loss_curves.png
     plt.legend()
     plt.title('Testing')
     plt.savefig(plot_name)
+    plt.close()
 
 
 def plot_training_curves(train_losses, train_accuracies, eval_losses, eval_accuracies, plot_name = 'loss_curves.png'):
@@ -244,8 +245,8 @@ def main():
     for bs in batch_sizes:
         set_seed()
         _,_,train_accuracies,_,eval_accuracies= train_mlp_drybean(batch_size=bs)
-        training_accuracy[lr] = train_accuracies
-        eval_accuracy[lr] = eval_accuracies
+        training_accuracy[bs] = train_accuracies
+        eval_accuracy[bs] = eval_accuracies
     plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'drybean_nn_bs_loss_curves.png'))
 
     training_accuracy = {}
@@ -264,8 +265,8 @@ def main():
     for bs in batch_sizes:
         set_seed()
         _,_,train_accuracies,_,eval_accuracies= train_mlp_adult(batch_size=bs)
-        training_accuracy[lr] = train_accuracies
-        eval_accuracy[lr] = eval_accuracies
+        training_accuracy[bs] = train_accuracies
+        eval_accuracy[bs] = eval_accuracies
     plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'adult_nn_bs_loss_curves.png'))
 
 

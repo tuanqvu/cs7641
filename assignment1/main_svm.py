@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 import random
 
 from tqdm import tqdm
+from sklearn.manifold import TSNE
 from sklearn.svm import SVC, LinearSVC
 from sklearn.experimental import enable_halving_search_cv
 from sklearn.model_selection import StratifiedKFold, KFold, GridSearchCV, HalvingGridSearchCV, cross_val_score, StratifiedShuffleSplit
@@ -228,5 +229,24 @@ def main():
         pickle.dump(best_model, f, protocol=5)
     plot_training_curves(eval_accuracies, plot_name=os.path.join('checkpoints', 'adult_svm_rbf_acc_curves.png'))
 
+
+def plot_tsne(X, y, title, plot_name):
+    tsne = TSNE(n_components=2, random_state=0, n_jobs=-1, verbose=2)
+    emb = tsne.fit_transform(X, y)
+    plt.figure()
+    plt.tick_params(left = False, right = False , labelleft = False , 
+                    labelbottom = False, bottom = False)
+    plt.title(title)
+    plt.scatter(emb[:,0], emb[:,1], c=y)
+    plt.savefig(f"{plot_name}.jpg")
+    plt.close()
+
+
 if __name__ == '__main__':
-    main()
+    # main()
+    
+    dataset = AdultDataset()
+    X, y = dataset[:]
+    X = X.numpy()
+    y = y.numpy()
+    plot_tsne(X, y, "Adult - t-SNE", "adult_tsne")
