@@ -213,7 +213,11 @@ def main():
     eval_accuracies = []
     test_sizes = np.arange(0.1, 1.0, 0.1)
     for size in test_sizes:
-      _, eval_accuracy, test_accuracy = train_linear_svm_drybean()
+      _, eval_accuracy, test_accuracy = train_svm_drybean(kernel='linear', test_size=size, p_grid={'class_weight' : [None], 
+                                                                                                   'dual' : ['auto'],
+                                                                                                   'multi_class' : ['ovr'],
+                                                                                                   'max_iter' : [1000000],
+                                                                                                   'C' : np.logspace(-2, 3, 10)}, verbose=2)
       train_sizes.append((1.0 - size) * dataset_length)
       test_accuracies.append(test_accuracy)
       eval_accuracies.append(eval_accuracy)
