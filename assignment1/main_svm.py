@@ -16,11 +16,11 @@ from sklearn.svm import SVC, LinearSVC
 from sklearn.experimental import enable_halving_search_cv
 from sklearn.model_selection import StratifiedKFold, KFold, GridSearchCV, HalvingGridSearchCV, cross_val_score, StratifiedShuffleSplit
 
-def plot_training_curves(eval_accuracies, plot_name = 'loss_curves.png'):
+def plot_training_curves(train_sizes, eval_accuracies, plot_name = 'loss_curves.png'):
     """
     Plot the training loss and accuracy curves
     """
-    plt.plot(range(len(eval_accuracies)), eval_accuracies, label='eval_acc')
+    plt.plot(train_sizes, eval_accuracies, label='eval_loss')
     plt.xlabel('Epoch')
     plt.legend()
     plt.title('Accuracy')
@@ -34,13 +34,13 @@ def calculate_accuracy(pred : np.ndarray, target : np.ndarray) -> float:
     return (np.sum(pred == target) / target.shape[0]).item()
 
 
-def train_svm_drybean(kernel='linear', p_grid={}, n_splits=3, test_size=0.3, n_jobs=-1, verbose=0):
+def train_svm_drybean(kernel='linear', p_grid={}, n_splits=3, test_size=0.3, eval_size=0.3, n_jobs=-1, verbose=0):
     """
     """
     n_epochs = 2
 
     dataset = DryBeanDataset()
-    train_set, test_set = random_split(dataset, [0.8, 0.2])
+    train_set, test_set = random_split(dataset, [1.0 - test_size, test_size])
 
     if kernel == 'linear':
       model = LinearSVC(dual='auto')
@@ -57,8 +57,8 @@ def train_svm_drybean(kernel='linear', p_grid={}, n_splits=3, test_size=0.3, n_j
     nested_scores = []
 
     for i in tqdm(range(n_epochs)):
-        inner_cv = StratifiedShuffleSplit(n_splits=n_splits, test_size=test_size, random_state=i)
-        outer_cv = StratifiedShuffleSplit(n_splits=n_splits, test_size=test_size, random_state=i)
+        inner_cv = StratifiedShuffleSplit(n_splits=n_splits, test_size=eval_size, random_state=i)
+        outer_cv = StratifiedShuffleSplit(n_splits=n_splits, test_size=eval_size, random_state=i)
 
         # Non_nested parameter search and scoring
         clf = HalvingGridSearchCV(estimator=model, param_grid=p_grid, cv=outer_cv, min_resources='smallest',
@@ -86,14 +86,14 @@ def train_svm_drybean(kernel='linear', p_grid={}, n_splits=3, test_size=0.3, n_j
     return best_model, nested_scores, acc
 
 
-def train_linear_svm_drybean(n_splits=3):
+def train_linear_svm_drybean(n_splits=3, test_size=0.2, eval_size=0.3):
     """
     """
     dataset = DryBeanDataset()
-    train_set, test_set = random_split(dataset, [0.8, 0.2])
+    train_set, test_set = random_split(dataset, [1.0 - test_size, test_size])
 
     model = SVC(kernel='linear', C=0.8, gamma='scale', class_weight='balanced')
-    skf = StratifiedShuffleSplit(n_splits=n_splits, test_size=0.3)
+    skf = StratifiedShuffleSplit(n_splits=n_splits, test_size=eval_size)
 
     best_model = None
     eval_accuracies = []
@@ -129,13 +129,13 @@ def train_linear_svm_drybean(n_splits=3):
     return best_model, eval_accuracies, acc
 
 
-def train_svm_adult(kernel='linear', p_grid={}, n_splits=3, test_size=0.3, n_jobs=-1, verbose=0):
+def train_svm_adult(kernel='linear', p_grid={}, n_splits=3, test_size=0.3, eval_size=0.2, n_jobs=-1, verbose=0):
     """
     """
     n_epochs = 2
 
     dataset = AdultDataset()
-    train_set, test_set = random_split(dataset, [0.8, 0.2])
+    train_set, test_set = random_split(dataset, [1.0 - test_size, test_size])
 
     if kernel == 'linear':
       model = LinearSVC(dual='auto')
@@ -152,8 +152,8 @@ def train_svm_adult(kernel='linear', p_grid={}, n_splits=3, test_size=0.3, n_job
     nested_scores = []
 
     for i in tqdm(range(n_epochs)):
-        inner_cv = StratifiedShuffleSplit(n_splits=n_splits, test_size=test_size, random_state=i)
-        outer_cv = StratifiedShuffleSplit(n_splits=n_splits, test_size=test_size, random_state=i)
+        inner_cv = StratifiedShuffleSplit(n_splits=n_splits, test_size=eval_size, random_state=i)
+        outer_cv = StratifiedShuffleSplit(n_splits=n_splits, test_size=eval_size, random_state=i)
 
         # Non_nested parameter search and scoring
         clf = HalvingGridSearchCV(estimator=model, param_grid=p_grid, cv=outer_cv, min_resources='smallest',
@@ -195,6 +195,17 @@ def main():
 
     if not os.path.exists('checkpoints'):
         os.makedirs('checkpoints')
+    
+    dataset = DryBeanDataset()
+
+    train_sizes = []
+    test_accuracies = []
+    test_sizes = np.arange(0.1, 1.0, 0.1)
+    for size in test_sizes:
+      _, eval_accuracies, test_accuracy = train_linear_svm_drybean()
+      train_sizes.append((1.0 - size) * dataset.shape[0])
+      test_accuracies.append(test_accuracy)
+    plot_training_curves(train_sizes, test_accuracies, 'drybean_svm_linear_acc_curves.png')
 
     # best_model, eval_accuracies, test_accuracy = train_linear_svm_drybean()
     # best_model, eval_accuracies, test_accuracy = train_svm_drybean(kernel='linear', p_grid={'class_weight' : [None, 'balanced'], 
@@ -223,11 +234,11 @@ def main():
     #     pickle.dump(best_model, f, protocol=5)
     # plot_training_curves(eval_accuracies, plot_name=os.path.join('checkpoints', 'adult_svm_linear_acc_curves.png'))
     
-    best_model, eval_accuracies, test_accuracy = train_svm_adult(kernel='rbf', p_grid={'C' : np.logspace(3, 4, 10), 'gamma' : np.logspace(-6, -4, 10)})
-    print(f'Final test accuracy for SVM with rbf kernel {test_accuracy}')
-    with open(os.path.join('checkpoints', 'adult_svm_rbf_model.pkl'), 'wb') as f:
-        pickle.dump(best_model, f, protocol=5)
-    plot_training_curves(eval_accuracies, plot_name=os.path.join('checkpoints', 'adult_svm_rbf_acc_curves.png'))
+    # best_model, eval_accuracies, test_accuracy = train_svm_adult(kernel='rbf', p_grid={'C' : np.logspace(3, 4, 10), 'gamma' : np.logspace(-6, -4, 10)})
+    # print(f'Final test accuracy for SVM with rbf kernel {test_accuracy}')
+    # with open(os.path.join('checkpoints', 'adult_svm_rbf_model.pkl'), 'wb') as f:
+    #     pickle.dump(best_model, f, protocol=5)
+    # plot_training_curves(eval_accuracies, plot_name=os.path.join('checkpoints', 'adult_svm_rbf_acc_curves.png'))
 
 
 def plot_tsne(X, y, title, plot_name):
@@ -243,10 +254,4 @@ def plot_tsne(X, y, title, plot_name):
 
 
 if __name__ == '__main__':
-    # main()
-    
-    dataset = AdultDataset()
-    X, y = dataset[:]
-    X = X.numpy()
-    y = y.numpy()
-    plot_tsne(X, y, "Adult - t-SNE", "adult_tsne")
+    main()

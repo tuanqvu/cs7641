@@ -269,6 +269,57 @@ def train_mlp_adult(lr=1e-3, regularization=1e-4, hidden_dim=25, n_epochs=50, ba
     return best_model, train_losses, train_accuracies, eval_losses, eval_accuracies
 
 
+def train_linear_adult(lr=1e-3, regularization=1e-4, n_epochs=50, batch_size=16):
+    """
+    """
+    dataset = AdultDataset()
+    model = LinearModel(dataset.get_num_features(), dataset.get_num_classes())
+
+    criterion = nn.CrossEntropyLoss()
+    optimizer = Adam(model.parameters(), lr=lr, weight_decay=regularization)
+    lr_scheduler = ReduceLROnPlateau(optimizer, mode='min', patience=3)
+
+    train_dataset, val_dataset, test_dataset = random_split(dataset, [0.7, 0.1, 0.2])
+    train_set = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_set = DataLoader(val_dataset, batch_size=batch_size, shuffle=True)
+    test_set = DataLoader(test_dataset, batch_size=batch_size, shuffle=True)
+
+    train_losses = []
+    train_accuracies = []
+    eval_losses = []
+    eval_accuracies = []
+
+    device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+    model.to(device)
+
+    best_acc = 0.
+    best_model = None
+
+    with tqdm(total=n_epochs) as pbar:
+        for epoch in range(n_epochs):
+            temp_losses, temp_accs = train_model(model, train_set, criterion, optimizer, device)
+            train_losses.append(np.mean(temp_losses))
+            train_accuracies.append(np.mean(temp_accs))
+
+            temp_losses, temp_accs = eval_model(model, val_set, criterion, device)
+            eval_losses.append(np.mean(temp_losses))
+            eval_accuracies.append(np.mean(temp_accs))
+
+            lr_scheduler.step(train_losses[-1])
+            
+            if eval_accuracies[-1] > best_acc:
+                best_acc = eval_accuracies[-1]
+                best_model = copy.deepcopy(model)
+
+            pbar.set_postfix(lr = optimizer.param_groups[0]['lr'], train_loss=train_losses[-1],
+                             eval_loss=eval_losses[-1], train_acc=train_accuracies[-1], eval_acc=eval_accuracies[-1])
+            pbar.update()
+
+    temp_losses, temp_accs = eval_model(best_model, test_set, criterion, device)
+    print(f'Final test loss {np.mean(temp_losses)} and accuracy {np.mean(temp_accs)}')
+    return best_model, train_losses, train_accuracies, eval_losses, eval_accuracies
+
+
 def set_seed(seed = 123456789):
     random.seed(seed)
     np.random.seed(seed)
