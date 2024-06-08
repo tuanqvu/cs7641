@@ -284,46 +284,49 @@ def main():
         
     # Best model
     best_model, train_losses, train_accuracies, eval_losses, eval_accuracies = train_linear_drybean(lr=1e-2, batch_size=8)
+    torch.save(best_model, os.path.join('checkpoints', 'drybean_nn_best_model.pt'))
+    plot_training_curves(train_losses, train_accuracies, eval_losses, eval_accuracies,
+                         plot_name=os.path.join('checkpoints', 'drybean_best_nn_loss_curves.png'))
 
-    training_accuracy = {}
-    eval_accuracy = {}
-    learning_rates = [2e-3, 1e-3, 5e-3, 1e-2]
-    for lr in learning_rates:
-        set_seed()
-        _,_,train_accuracies,_,eval_accuracies= train_mlp_drybean(lr=lr)
-        training_accuracy[lr] = train_accuracies
-        eval_accuracy[lr] = eval_accuracies
-    plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'drybean_nn_lr_loss_curves.png'))
+    # training_accuracy = {}
+    # eval_accuracy = {}
+    # learning_rates = [2e-3, 1e-3, 5e-3, 1e-2]
+    # for lr in learning_rates:
+    #     set_seed()
+    #     _,_,train_accuracies,_,eval_accuracies= train_mlp_drybean(lr=lr)
+    #     training_accuracy[lr] = train_accuracies
+    #     eval_accuracy[lr] = eval_accuracies
+    # plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'drybean_nn_lr_loss_curves.png'))
 
-    training_accuracy = {}
-    eval_accuracy = {}
-    batch_sizes = [8, 16, 32, 64]
-    for bs in batch_sizes:
-        set_seed()
-        _,_,train_accuracies,_,eval_accuracies= train_mlp_drybean(batch_size=bs)
-        training_accuracy[bs] = train_accuracies
-        eval_accuracy[bs] = eval_accuracies
-    plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'drybean_nn_bs_loss_curves.png'))
+    # training_accuracy = {}
+    # eval_accuracy = {}
+    # batch_sizes = [8, 16, 32, 64]
+    # for bs in batch_sizes:
+    #     set_seed()
+    #     _,_,train_accuracies,_,eval_accuracies= train_mlp_drybean(batch_size=bs)
+    #     training_accuracy[bs] = train_accuracies
+    #     eval_accuracy[bs] = eval_accuracies
+    # plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'drybean_nn_bs_loss_curves.png'))
 
-    training_accuracy = {}
-    eval_accuracy = {}
-    learning_rates = [2e-3, 1e-3, 5e-3, 1e-2]
-    for lr in learning_rates:
-        set_seed()
-        _,_,train_accuracies,_,eval_accuracies= train_mlp_adult(lr=lr)
-        training_accuracy[lr] = train_accuracies
-        eval_accuracy[lr] = eval_accuracies
-    plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'adult_nn_lr_loss_curves.png'))
+    # training_accuracy = {}
+    # eval_accuracy = {}
+    # learning_rates = [2e-3, 1e-3, 5e-3, 1e-2]
+    # for lr in learning_rates:
+    #     set_seed()
+    #     _,_,train_accuracies,_,eval_accuracies= train_mlp_adult(lr=lr)
+    #     training_accuracy[lr] = train_accuracies
+    #     eval_accuracy[lr] = eval_accuracies
+    # plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'adult_nn_lr_loss_curves.png'))
 
-    training_accuracy = {}
-    eval_accuracy = {}
-    batch_sizes = [8, 16, 32, 64]
-    for bs in batch_sizes:
-        set_seed()
-        _,_,train_accuracies,_,eval_accuracies= train_mlp_adult(batch_size=bs)
-        training_accuracy[bs] = train_accuracies
-        eval_accuracy[bs] = eval_accuracies
-    plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'adult_nn_bs_loss_curves.png'))
+    # training_accuracy = {}
+    # eval_accuracy = {}
+    # batch_sizes = [8, 16, 32, 64]
+    # for bs in batch_sizes:
+    #     set_seed()
+    #     _,_,train_accuracies,_,eval_accuracies= train_mlp_adult(batch_size=bs)
+    #     training_accuracy[bs] = train_accuracies
+    #     eval_accuracy[bs] = eval_accuracies
+    # plot_learning_curves(training_accuracy, eval_accuracy, plot_name=os.path.join('checkpoints', 'adult_nn_bs_loss_curves.png'))
 
 
 if __name__ == '__main__':
