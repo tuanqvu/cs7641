@@ -44,6 +44,8 @@ def plot_training_curves(train_losses, train_accuracies, eval_losses, eval_accur
     """
     Plot the training loss and accuracy curves
     """
+    train_losses = np.clip(train_losses, None, 100)
+    eval_losses = np.clip(eval_losses, None, 100)
     plt.subplot(1, 2, 1)
     plt.plot(range(len(train_losses)), train_losses, label='train_loss')
     plt.plot(range(len(eval_losses)), eval_losses, label='eval_loss')
