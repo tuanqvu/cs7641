@@ -21,8 +21,8 @@ def plot_training_curves(train_sizes, eval_accuracies, test_accuracies, plot_nam
     Plot the training loss and accuracy curves
     """
     plt.subplot(1, 2, 1)
-    for size in train_sizes:
-        plt.plot(eval_accuracies, label=str(size))
+    for idx,size in enumerate(train_sizes):
+        plt.plot(eval_accuracies[idx], label=str(size))
     plt.xlabel('Iteration')
     plt.ylabel('Accuracy')
     plt.legend()
