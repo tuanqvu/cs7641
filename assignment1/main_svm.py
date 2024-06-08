@@ -211,17 +211,18 @@ def main():
     train_sizes = []
     test_accuracies = []
     eval_accuracies = []
-    test_sizes = np.arange(0.1, 1.0, 0.1)
+    test_sizes = np.arange(0.1, 1.0, 0.2)
     for size in test_sizes:
+      print(size)
       _, eval_accuracy, test_accuracy = train_svm_drybean(kernel='linear', test_size=size, p_grid={'class_weight' : [None], 
                                                                                                    'dual' : ['auto'],
                                                                                                    'multi_class' : ['ovr'],
                                                                                                    'max_iter' : [1000000],
-                                                                                                   'C' : np.logspace(-2, 3, 10)}, verbose=2)
-      train_sizes.append((1.0 - size) * dataset_length)
+                                                                                                   'C' : np.logspace(-2, 3, 10)}, verbose=0)
+      train_sizes.append(int((1.0 - size) * dataset_length))
       test_accuracies.append(test_accuracy)
       eval_accuracies.append(eval_accuracy)
-    plot_training_curves(train_sizes, eval_accuracies, test_accuracies, 'drybean_svm_linear_acc_curves.png')
+    plot_training_curves(train_sizes, eval_accuracies, test_accuracies, os.path.join('checkpoints', 'drybean_svm_linear_acc_curves.png'))
 
     # best_model, eval_accuracies, test_accuracy = train_linear_svm_drybean()
     # best_model, eval_accuracies, test_accuracy = train_svm_drybean(kernel='linear', p_grid={'class_weight' : [None, 'balanced'], 
