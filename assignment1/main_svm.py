@@ -16,15 +16,24 @@ from sklearn.svm import SVC, LinearSVC
 from sklearn.experimental import enable_halving_search_cv
 from sklearn.model_selection import StratifiedKFold, KFold, GridSearchCV, HalvingGridSearchCV, cross_val_score, StratifiedShuffleSplit
 
-def plot_training_curves(train_sizes, eval_accuracies, plot_name = 'loss_curves.png'):
+def plot_training_curves(train_sizes, eval_accuracies, test_accuracies, plot_name = 'loss_curves.png'):
     """
     Plot the training loss and accuracy curves
     """
-    plt.plot(train_sizes, eval_accuracies, label='eval_loss')
-    plt.xlabel('Epoch')
+    plt.subplot(1, 2, 1)
+    for size in train_sizes:
+        plt.plot(eval_accuracies, label=str(size))
+    plt.xlabel('Iteration')
+    plt.ylabel('Accuracy')
     plt.legend()
-    plt.title('Accuracy')
+    plt.title('Training')
+    plt.subplot(1, 2, 2)
+    plt.plot(train_sizes, test_accuracies)
+    plt.xlabel('Training Size')
+    plt.ylabel('Accuracy')
+    plt.title('Testing')
     plt.savefig(plot_name)
+    plt.close()
 
 
 def calculate_accuracy(pred : np.ndarray, target : np.ndarray) -> float:
@@ -197,15 +206,18 @@ def main():
         os.makedirs('checkpoints')
     
     dataset = DryBeanDataset()
+    dataset_length = len(dataset)
 
     train_sizes = []
     test_accuracies = []
+    eval_accuracies = []
     test_sizes = np.arange(0.1, 1.0, 0.1)
     for size in test_sizes:
-      _, eval_accuracies, test_accuracy = train_linear_svm_drybean()
-      train_sizes.append((1.0 - size) * dataset.shape[0])
+      _, eval_accuracy, test_accuracy = train_linear_svm_drybean()
+      train_sizes.append((1.0 - size) * dataset_length)
       test_accuracies.append(test_accuracy)
-    plot_training_curves(train_sizes, test_accuracies, 'drybean_svm_linear_acc_curves.png')
+      eval_accuracies.append(eval_accuracy)
+    plot_training_curves(train_sizes, eval_accuracies, test_accuracies, 'drybean_svm_linear_acc_curves.png')
 
     # best_model, eval_accuracies, test_accuracy = train_linear_svm_drybean()
     # best_model, eval_accuracies, test_accuracy = train_svm_drybean(kernel='linear', p_grid={'class_weight' : [None, 'balanced'], 
