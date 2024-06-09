@@ -46,7 +46,7 @@ def calculate_accuracy(pred : np.ndarray, target : np.ndarray) -> float:
 def train_svm_drybean(kernel='linear', p_grid={}, n_splits=3, test_size=0.3, eval_size=0.3, n_jobs=-1, verbose=0):
     """
     """
-    n_epochs = 2
+    n_epochs = 5
 
     dataset = DryBeanDataset()
     train_set, test_set = random_split(dataset, [1.0 - test_size, test_size])
@@ -141,7 +141,7 @@ def train_linear_svm_drybean(n_splits=3, test_size=0.2, eval_size=0.3):
 def train_svm_adult(kernel='linear', p_grid={}, n_splits=3, test_size=0.3, eval_size=0.2, n_jobs=-1, verbose=0):
     """
     """
-    n_epochs = 2
+    n_epochs = 5
 
     dataset = AdultDataset()
     train_set, test_set = random_split(dataset, [1.0 - test_size, test_size])
@@ -200,29 +200,29 @@ def set_seed(seed = 123456789):
 
 
 def main():
-    set_seed()
-
     if not os.path.exists('checkpoints'):
         os.makedirs('checkpoints')
-    
-    dataset = DryBeanDataset()
-    dataset_length = len(dataset)
 
     train_sizes = []
     test_accuracies = []
     eval_accuracies = []
-    test_sizes = np.arange(0.1, 1.0, 0.2)
+    # test_sizes = np.arange(0.1, 1.0, 0.2)
+    Cs = []
+    C_space = np.logspace(-2, 3, 5)
+    test_sizes = [0.3]
     for size in test_sizes:
-      print(size)
-      _, eval_accuracy, test_accuracy = train_svm_drybean(kernel='linear', test_size=size, p_grid={'class_weight' : [None], 
-                                                                                                   'dual' : ['auto'],
-                                                                                                   'multi_class' : ['ovr'],
-                                                                                                   'max_iter' : [1000000],
-                                                                                                   'C' : np.logspace(-2, 3, 10)}, verbose=0)
-      train_sizes.append(int((1.0 - size) * dataset_length))
-      test_accuracies.append(test_accuracy)
-      eval_accuracies.append(eval_accuracy)
-    plot_training_curves(train_sizes, eval_accuracies, test_accuracies, os.path.join('checkpoints', 'drybean_svm_linear_acc_curves.png'))
+        for c in C_space:
+            set_seed()
+            _, eval_accuracy, test_accuracy = train_svm_drybean(kernel='linear', test_size=size, p_grid={'class_weight' : [None], 
+                                                                                                        'dual' : ['auto'],
+                                                                                                        'multi_class' : ['ovr'],
+                                                                                                        'max_iter' : [1000000],
+                                                                                                        'C' : [c]}, verbose=0)
+            Cs.append(c)
+            train_sizes.append(round(1.0 - size, 1))
+            test_accuracies.append(test_accuracy)
+            eval_accuracies.append(eval_accuracy)
+    plot_training_curves(Cs, eval_accuracies, test_accuracies, os.path.join('checkpoints', 'drybean_svm_linear_c_curves.png'))
 
     # best_model, eval_accuracies, test_accuracy = train_linear_svm_drybean()
     # best_model, eval_accuracies, test_accuracy = train_svm_drybean(kernel='linear', p_grid={'class_weight' : [None, 'balanced'], 
