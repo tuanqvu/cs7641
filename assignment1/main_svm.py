@@ -35,6 +35,25 @@ def plot_training_curves(train_sizes, eval_accuracies, test_accuracies, plot_nam
     plt.savefig(plot_name)
     plt.close()
 
+def plot_training_curves_2(Cs, eval_accuracies, test_accuracies, plot_name = 'loss_curves.png'):
+    """
+    Plot the training loss and accuracy curves
+    """
+    plt.subplot(1, 2, 1)
+    for idx,size in enumerate(Cs):
+        plt.plot(eval_accuracies[idx], label=str(round(size, 2)))
+    plt.xlabel('Iteration')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.title('Training')
+    plt.subplot(1, 2, 2)
+    plt.plot(range(len(test_accuracies)), test_accuracies)
+    plt.xlabel('Iteration')
+    plt.ylabel('Accuracy')
+    plt.title('Testing')
+    plt.savefig(plot_name)
+    plt.close()
+
 
 def calculate_accuracy(pred : np.ndarray, target : np.ndarray) -> float:
     """
