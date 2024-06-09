@@ -35,6 +35,27 @@ def plot_training_curves(train_sizes, eval_accuracies, test_accuracies, plot_nam
     plt.savefig(plot_name)
     plt.close()
 
+
+def plot_training_curves_2(Cs, eval_accuracies, test_accuracies, plot_name = 'loss_curves.png'):
+    """
+    Plot the training loss and accuracy curves
+    """
+    plt.subplot(1, 2, 1)
+    for idx,size in enumerate(Cs):
+        plt.plot(eval_accuracies[idx], label=str(round(size, 2)))
+    plt.xlabel('Iteration')
+    plt.ylabel('Accuracy')
+    plt.legend()
+    plt.title('Training')
+    plt.subplot(1, 2, 2)
+    plt.plot(range(len(test_accuracies)), test_accuracies)
+    plt.xlabel('Iteration')
+    plt.ylabel('Accuracy')
+    plt.title('Testing')
+    plt.savefig(plot_name)
+    plt.close()
+
+
 def calculate_accuracy(pred : np.ndarray, target : np.ndarray) -> float:
     """
     Calculate accuracy of prediction
@@ -167,6 +188,24 @@ def main():
         test_accuracies.append(test_accuracy)
         eval_accuracies.append(eval_accuracy)
     plot_training_curves(train_sizes, eval_accuracies, test_accuracies, os.path.join('checkpoints', 'drybean_knn_learning_curves.png'))
+    
+    train_sizes = []
+    test_accuracies = []
+    eval_accuracies = []
+    neighbors = []
+    n_neighbors = np.arange(5, 10)
+    n_leaf_sizes = np.logspace(8, 12, 10, base=2, dtype=int)
+    test_sizes = [0.3]
+    for size in test_sizes:
+        for n in n_neighbors:
+            # for c in C_space:
+            set_seed()
+            _, eval_accuracy, test_accuracy = train_knn_drybean(p_grid={'n_neighbors' : [n], 'leaf_size' : n_leaf_sizes})
+            neighbors.append(n)
+            train_sizes.append(round(1.0 - size, 1))
+            test_accuracies.append(test_accuracy)
+            eval_accuracies.append(eval_accuracy)
+    plot_training_curves_2(neighbors, eval_accuracies, test_accuracies, os.path.join('checkpoints', 'drybean_knn_neighbor_curves.png'))
 
     # best_model, eval_accuracies, test_accuracy = train_knn_drybean()
     # print(f'Final test accuracy for kNN {test_accuracy}')
