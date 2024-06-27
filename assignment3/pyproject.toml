@@ -1,0 +1,24 @@
+[build-system]
+requires = ["poetry-core>=1.0.0", "setuptools", "wheel"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "assignment1"
+version = "0.1.0"
+description = "Assignment 1"
+readme = "README.md"
+authors = ["Tuan Vu <tuan.vu68@yahoo.com>"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = "3.10.12"
+matplotlib = "3.8.4"
+numpy = "1.26.4"
+PyYAML = "6.0.1"
+torch = "2.2.2"
+tqdm = "4.66.2"
+ucimlrepo = "^0.0.6"
+pandas = "2.2.2"
+certifi = "^2024.2.2"
+openpyxl = "^3.1.2"
+scikit-learn = "^1.4.2"
