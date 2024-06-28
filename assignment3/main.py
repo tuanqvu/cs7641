@@ -35,7 +35,7 @@ def set_seed(seed=123456789):
     torch.use_deterministic_algorithms(True)
 
 
-def plot_results(scores, plot_name=''):
+def plot_results(scores, title, plot_name=''):
     xticks = None
     for name, item in scores.items():
         if name == 'Ground truth':
@@ -46,11 +46,12 @@ def plot_results(scores, plot_name=''):
             if xticks is None:
                 xticks = x
             plt.plot(x, y, label=name)
-    plt.axhline(scores['Ground truth'], linestyle='--', color='red', label='Ground truth')
+    plt.axhline(scores['Ground truth'], linestyle='--',
+                color='red', label='Ground truth')
     plt.xticks(xticks)
     plt.grid(visible=True)
     plt.legend()
-    plt.title('Clustering')
+    plt.title(title)
     plt.ylabel('Silhouette Coeff.')
     plt.xlabel('Number of Clusters')
     plt.savefig(plot_name)
@@ -90,7 +91,7 @@ def clustering():
                 scores[name] = []
             scores[name].append([n, score])
 
-        plot_results(scores, os.path.join(
+        plot_results(scores, 'Clustering', os.path.join(
             'checkpoints', f"{dataset_name}_clustering.png"))
 
 
@@ -107,12 +108,47 @@ def dimension_reduction():
         X = X.numpy()
         y = y.numpy()
 
+        score = silhouette_score(X, y, random_state=0)
+        scores['Ground truth'] = [score]
+
+        n_clusters = np.arange(2, 12, dtype=int)
+        for n in tqdm(n_clusters):
+            name = 'PCA'
+            new_X = PCA(n_components=n, random_state=0).fit_transform(X)
+            y_pred = KMeans(n_clusters=4, random_state=0).fit_predict(new_X)
+            score = silhouette_score(new_X, y_pred, random_state=0)
+            if name not in scores:
+                scores[name] = []
+            scores[name].append([n, score])
+
+            name = 'ICA'
+            new_X = FastICA(n_components=n, random_state=0).fit_transform(X)
+            y_pred = KMeans(n_clusters=4, random_state=0).fit_predict(new_X)
+            score = silhouette_score(new_X, y_pred, random_state=0)
+            if name not in scores:
+                scores[name] = []
+            scores[name].append([n, score])
+
+            name = 'Sparse Random Projection'
+            new_X = SparseRandomProjection(
+                n_components=n, random_state=0).fit_transform(X)
+            y_pred = KMeans(n_clusters=4, random_state=0).fit_predict(new_X)
+            score = silhouette_score(new_X, y_pred, random_state=0)
+            if name not in scores:
+                scores[name] = []
+            scores[name].append([n, score])
+
+        plot_results(scores, 'Dimension Reduction', os.path.join(
+            'checkpoints', f"{dataset_name}_dimension_reduction.png"))
+
 
 def main():
     if not os.path.exists('checkpoints'):
         os.makedirs('checkpoints')
     print("Running clustering")
     clustering()
+    print("Running dimension reduction")
+    dimension_reduction()
 
 
 if __name__ == '__main__':
